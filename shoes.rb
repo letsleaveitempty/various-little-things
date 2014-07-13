@@ -1,19 +1,28 @@
 Shoes.app do
- flow do
-    stack :width => 50 do
-      para "Hello!"
-      para "Hello!"
-      para "Hello!"
-    end
-    stack :width => 50 do
-      para "Goodbye!"
-      para "Goodbye!"
-      para "Goodbye!"
-    end
-  end
+  start_game
+  enter_letter
+  check_letter
+end
 
-  line = edit_line
-  button "Push me!" do
-    alert line.text
+def start_game
+  flow margin: 12 do
+    @words = %w(poland germany norway spain france)
+    @words.sample.chars.each do |letter|
+      para "_"
+    end
   end
+end
+
+def enter_letter
+  flow margin: 12 do
+    @letter = edit_line
+    @letter.focus
+    @check_button = button 'Check it!'
+    @check_button.click { check_letter }
+  end
+end
+
+def check_letter
+  para @letter.text unless @letter.text.empty?
+  @letter.text = ''
 end

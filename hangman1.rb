@@ -1,129 +1,92 @@
-def initialize_game
-  display_welcome_text
-  set_variables
-  get_letter
-  start_game if @user_word == 'start'
-end
- 
-def display_welcome_text
-  puts "\n<<< Terminal Hangman >>>\n\n"
-  puts "Type \"start\" to begin a new game\n"
-end
-
-def set_variables
-  @turn = 0
-  @rematch = nil
+def initialize_hangman
   @alphabet = %w(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)
-  @lives = 7
   @words = %w(one two three four five)
+
+  puts "\n--- HANGMAN ---\n\n"
+
+  quit_or_play
 end
 
-def get_letter
+def quit_or_play
+  puts "Type any key to play, \"quit\" to... quit :)\n"
   print "> "
-  @user_word = gets.chomp.downcase.strip
-end
-
-def start_game
-  puts "Generating your word...\n\n"
-   
-  # Loop the game until the user types 'quit'
-  until @rematch == "quit"
-   
-    word = @words.sample.upcase
-    word_letters = word.chars.to_a
-    @remaining_letters = word.chars.to_a
-    
-    # If it is the first turn OR they choose to rematch
-    if @rematch == "new" || @turn == 0
-      word_letters.each do |letter|
-        print "_ "
-      end
-
-      display_lives
-      display_alphabet
-      guess
-   
-      # After the first guess, only break if lives are 0 or no letters remaining
-      until @lives == 0 || @remaining_letters == []
-        if word_letters.include?(@given_letter) == true
-          puts "\n\n"
-          @alphabet.delete(@given_letter)  
-          @remaining_letters.delete(@given_letter)
-
-          if @remaining_letters == []
-            break
-          end
-
-          word_letters.each do |letter|
-            if @alphabet.include?(letter) == true
-              print "_ "
-            else 
-              print "#{letter} "
-            end
-          end
-      
-          display_lives
-          display_alphabet
-          guess
-    
-        elsif @lives > 1
-          @lives -= 1
-          puts "WRONG!\n\n"
-          @alphabet.delete(@given_letter)
-    
-          word_letters.each do |letter|
-            if @alphabet.include?(letter) == true
-              print "_ "
-            else 
-              print "#{letter} "
-            end
-          end
-
-          display_lives
-          display_alphabet
-          guess
-
-        else 
-          @lives -= 1
-          puts "YOU LOSE!\n"
-          puts "The word was #{word}"
-        end  
-      end
-
-      if @remaining_letters == []
-        puts "CONGRATULATIONS! You got the word #{word}" 
-        @turn += 1
-        puts "Type \"new\" to play again, type \"quit\" to exit"
-        print "> "
-        @rematch = gets.chomp.downcase.strip
-      else
-        puts "Please type either \"new\" OR \"quit\""
-      end
-    end
+  @decision = gets.chomp.downcase.strip
+  if @decision == 'quit'
+    abort('See you next time!')
+  else
+    play_game
   end
 end
 
-def guess
-  puts "Guess a letter: "
+def play_game
+  puts "\n\nThis is your word:\n\n"
+  prepare_word
+  guess_letter
+end
+
+def prepare_word
+  word = @words.sample.upcase
+  @word_letters = word.chars.to_a
+  @letters_to_guess = word.chars.to_a
+  @lives = 7
+  print_word
+end
+
+def print_lives
+  if @lives == 0
+    puts "\nYou lost.\n\n"
+    quit_or_play
+  else
+    puts "\n\nYou have #{@lives} lives left."
+  end
+end
+
+def print_alphabet
+  puts "\nLetters to use:\n"
+  @alphabet.each do |letter|
+    print "#{letter} "
+  end
+end
+
+def guess_letter
+  print_lives
+  print_alphabet
+  puts "\n\nType your guess:\n"
   print "> "
   @given_letter = gets.chomp.upcase.strip
-  until @alphabet.include?(@given_letter) == true
-     puts "Please guess from the available letters"
-     print "> "
-     @given_letter = gets.chomp.upcase.strip
+  check_letter
+end
+
+def check_letter
+  if @alphabet.include?(@given_letter)
+    check_letters_to_guess
+    @alphabet.delete(@given_letter)
+  else
+    puts "Sorry, you used the letter already."
   end
 end
 
-def display_alphabet
-  @alphabet.each do |alph_letter|
-    print "#{alph_letter} "
+def check_letters_to_guess
+  if @letters_to_guess.include?(@given_letter)
+    print_word
+  else
+    @lives -= 1
+    puts "\n\nNOPE!\n\n"
+    guess_letter
   end
+  print_lives
+  print_alphabet
+  @letters_to_guess.delete(@given_letter)
 end
 
-def display_lives
-  puts "Lives Remaining: #{@lives}"
-  puts "Letters Remaining: "  
-  puts @remaining_letters
+def print_word
+  @word_letters.each do |letter|
+    if @alphabet.include?(letter) == true
+      print "_ "
+    else 
+      print "#{letter} "
+    end
+  end 
 end
 
-initialize_game
+initialize_hangman

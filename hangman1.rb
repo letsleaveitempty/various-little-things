@@ -1,10 +1,10 @@
-def initialize_hangman
-  @alphabet = %w(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)
-  @words = %w(one two three four five)
-
+def start_hangman
   puts "\n--- HANGMAN ---\n\n"
-
   quit_or_play
+end
+
+def dictionary
+  %w(one two three four five)
 end
 
 def quit_or_play
@@ -14,28 +14,28 @@ def quit_or_play
   if @decision == 'quit'
     abort('See you next time!')
   else
+    prepare_word
     play_game
   end
 end
 
+def prepare_word
+  @word = dictionary.sample.upcase
+  @word_letters = @word.chars.to_a
+  @letters_to_guess = @word.chars.to_a
+  @alphabet = %w(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)
+  @lives = 7
+end
+
 def play_game
-  puts "\n\nThis is your word:\n\n"
-  prepare_word
-  check_or_print_lives
-  print_alphabet
+  print_word
+  check_game
   get_letter
   check_letter_in_alphabet
 end
 
-def prepare_word
-  @word = @words.sample.upcase
-  @word_letters = @word.chars.to_a
-  @letters_to_guess = @word.chars.to_a
-  @lives = 7
-  print_word
-end
-
 def print_word
+  puts "\n\nThis is your word:\n\n"
   @word_letters.each do |letter|
     if @alphabet.include?(letter) == true
       print "_ "
@@ -45,19 +45,17 @@ def print_word
   end 
 end
 
-def check_or_print_lives
+def check_game
   if @lives == 0
-    puts "\nYou lost.\n\n"
+    puts "\n\nYou LOSE!\n"
+    puts "The word was: #{@word}\n\n"
+    quit_or_play
+  elsif @letters_to_guess == []
+    puts "\n\nYou WIN!\n\n"
     quit_or_play
   else
-    puts "\n\nYou have #{@lives} lives left."
-  end 
-end
-
-def print_alphabet
-  puts "\nLetters to use:\n"
-    @alphabet.each do |letter|
-    print "#{letter} "
+    print_lives
+    print_alphabet
   end
 end
 
@@ -67,43 +65,37 @@ def get_letter
   @given_letter = gets.chomp.upcase.strip
 end
 
+def print_lives
+  puts "\n\nYou have #{@lives} lives left."
+end
+
+def print_alphabet
+  puts "\nLetters to use:\n"
+    @alphabet.each do |letter|
+    print "#{letter} "
+  end
+end
+
 def check_letter_in_alphabet
   if @alphabet.include?(@given_letter)
     @alphabet.delete(@given_letter)
     check_letters_to_guess
-  elsif
-    puts "Sorry, you used the letter already."
-    continue_game
+  else
+    puts "\n\nSorry, you used the letter already. Pick a new one."
+    get_letter
+    check_letter_in_alphabet
   end
 end
 
 def check_letters_to_guess
-  if @letters_to_guess.empty?
-    puts "You WON!"
-    puts "The word is: #{@word}"
-    quit_or_play
-  else
-    check_the_guess
-  end
-  @letters_to_guess.delete(@given_letter)
-end
-
-def check_the_guess
   if @letters_to_guess.include?(@given_letter)
-    continue_game
+    @letters_to_guess.delete(@given_letter)
+    play_game
   else
     @lives -= 1
     puts "\n\nNOPE!\n\n"
-    continue_game
+    play_game
   end 
 end
 
-def continue_game
-  print_word
-  check_or_print_lives
-  print_alphabet
-  get_letter
-  check_letter_in_alphabet
-end
-
-initialize_hangman
+start_hangman
